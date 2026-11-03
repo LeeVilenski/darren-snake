@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#141f36">
-<title>Darren Snake.app | Version 26 - RAM Countdown</title>
+<title>Darren Snake.app | Version 27 - Expand</title>
 <!-- Bonus teeth from Level 2; RAM Gigaboo rounds from Level 3; real recorded catchphrase effects. -->
 <style>
 :root{--bg:#071911;--panel:#0e2a22;--line:#245d49;--muted:#a8cbb7;--text:#edfff6;--lime:#bdff6b;--cyan:#55f1ce;--cream:#fff4cf;--mayo:#f8efcf;--gold:#e9c773}
@@ -153,6 +153,16 @@ p.subtitle{font-size:11px;color:#b3c4db;margin-bottom:9px}
 }
 @media(max-width:360px){.actions{gap:5px}.secondary{font-size:11px}.stat{padding-left:8px;padding-right:8px}}
 
+/* Expanded (maximised) view: hide the extras so the board fills the screen. */
+.max-btn{flex-shrink:0;display:grid;place-items:center;width:26px;height:22px;padding:0;border:1px solid #ffffff2d;border-radius:7px;background:#ffffff14;color:#e6edff;font:700 14px/1 system-ui,sans-serif;cursor:pointer;touch-action:manipulation}
+.max-btn:active{background:#90adff4c}
+@media(hover:hover){.max-btn:hover{border-color:#89b2c5}}
+.traffic-lights .green{cursor:pointer}
+body.expanded main{width:min(100%,max(520px,calc(100dvh - 90px)))}
+body.expanded h1,body.expanded .subtitle,body.expanded .footer,body.expanded .help{display:none}
+body.expanded .controls{justify-content:center;grid-template-columns:auto}
+@media(pointer:fine){body.expanded .controls{display:none}}
+
 /* Darren's occasional sayings: lightweight, non-blocking notification */
 .catchphrase{position:absolute;z-index:3;left:50%;top:9%;transform:translate(-50%,-6px) scale(.94);pointer-events:none;
   padding:7px 14px;border-radius:999px;border:1px solid #bfffe8aa;
@@ -201,15 +211,16 @@ p.subtitle{font-size:11px;color:#b3c4db;margin-bottom:9px}
 .bsod .bsod-alt{background:#fff;color:#2c6ad8;border:1px solid #4d83e0;box-shadow:none}
 .bsod .bsod-alt:active{background:#e8f0ff}
 @media(max-width:420px){.actions{gap:6px}.actions .secondary{font-size:12px;padding:0 3px;white-space:nowrap}}
-.overlay .lb-btn{display:block;margin:9px auto 0;flex:none;padding:8px 16px}
+.overlay .lb-btn{display:block;margin:9px auto 0;flex:none;padding:8px 16px}.overlay .lb-btn.hidden{display:none}
 </style>
 </head>
 <body>
 <main>
   <div class="topline mac-titlebar">
-    <div class="traffic-lights" aria-label="Mac window controls"><i class="red"></i><i class="yellow"></i><i class="green"></i></div>
+    <div class="traffic-lights" aria-label="Mac window controls"><i class="red"></i><i class="yellow"></i><i class="green" id="greenLight" title="Expand game"></i></div>
     <span class="brand">▣ Darren Snake.app <span class="brand-sub">— Service Desk Arcade</span></span>
     <span class="tag" id="systemStatus">● APP READY</span>
+    <button class="max-btn" id="maxBtn" aria-label="Expand game" aria-pressed="false" title="Expand game (F)">⤢</button>
   </div>
   <h1>DARREN <span class="accent">SNAKE.app</span></h1>
   <p class="subtitle">macOS EDITION · Collect mayo, wake Darren up and avoid faulty hardware.</p>
@@ -259,7 +270,7 @@ p.subtitle{font-size:11px;color:#b3c4db;margin-bottom:9px}
   </div>
   </div>
   <div class="actions"><button class="secondary" id="pauseBtn" disabled>⏸ Pause</button><button class="secondary" id="restartBtn">↻ New game</button><button class="secondary" id="soundBtn" aria-label="Mute game sounds" aria-pressed="true">🔊 Sound</button><button class="secondary" id="lbBtn">🏆 Scores</button></div>
-  <div class="controls"><div class="help"><strong>How to play</strong><br>Swipe the board or use <strong>↑ ↓ ← →</strong> / WASD.<br>Mayo +100 · Tooth +200 · RAM Gigaboo +2,000 (Level 3+).<br>Avoid faulty PCs. <strong>Space</strong> pauses.</div><div class="dpad" aria-label="Direction controls"><button class="up" data-dir="up" aria-label="Up">↑</button><button class="left" data-dir="left" aria-label="Left">←</button><button class="down" data-dir="down" aria-label="Down">↓</button><button class="right" data-dir="right" aria-label="Right">→</button></div></div>
+  <div class="controls"><div class="help"><strong>How to play</strong><br>Swipe the board or use <strong>↑ ↓ ← →</strong> / WASD.<br>Mayo +100 · Tooth +200 · RAM Gigaboo +2,000 (Level 3+).<br>Avoid faulty PCs. <strong>Space</strong> pauses · <strong>F</strong> expands.</div><div class="dpad" aria-label="Direction controls"><button class="up" data-dir="up" aria-label="Up">↑</button><button class="left" data-dir="left" aria-label="Left">←</button><button class="down" data-dir="down" aria-label="Down">↓</button><button class="right" data-dir="right" aria-label="Right">→</button></div></div>
   <p class="footer">Mac-style interface · Online leaderboard · Plays offline too</p>
 </main>
 <div class="lb hidden" id="lb" role="dialog" aria-modal="true" aria-labelledby="lbTitle">
@@ -1263,6 +1274,8 @@ p.subtitle{font-size:11px;color:#b3c4db;margin-bottom:9px}
     const k=e.key.toLowerCase();
     const map={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
     if(map[k]){e.preventDefault();changeDir(map[k]);}
+    else if(k==='f'&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();toggleExpanded();}
+    else if(k==='escape'&&document.body.classList.contains('expanded')&&!fsElement()){setExpanded(false);}
     else if(e.code==='Space'){e.preventDefault();if(state==='ready'||state==='over')start();else if(state==='levelup')resumeLevel();else togglePause();}
   });
 
@@ -1300,6 +1313,39 @@ p.subtitle{font-size:11px;color:#b3c4db;margin-bottom:9px}
     const size=Math.max(0,Math.floor(Math.min(boardSlot.clientWidth-8,boardSlot.clientHeight-8)));
     board.style.width=size+'px'; board.style.height=size+'px';
   }
+  // Expand / maximise: real full screen where the browser supports it,
+  // plus a compact layout (also the fallback on iPhone, which has no full screen API).
+  const maxBtn=document.getElementById('maxBtn');
+  const fsElement=()=>document.fullscreenElement||document.webkitFullscreenElement;
+  function setExpanded(on){
+    document.body.classList.toggle('expanded',on);
+    maxBtn.textContent=on?'⤡':'⤢';
+    const label=on?'Shrink game':'Expand game';
+    maxBtn.setAttribute('aria-label',label);maxBtn.title=label+' (F)';maxBtn.setAttribute('aria-pressed',String(on));
+    resizeBoard();
+  }
+  function toggleExpanded(){
+    const on=!document.body.classList.contains('expanded');
+    setExpanded(on);
+    const root=document.documentElement;
+    try{
+      if(on&&!fsElement()){
+        const req=root.requestFullscreen||root.webkitRequestFullscreen;
+        const r=req&&req.call(root);
+        if(r&&r.catch)r.catch(()=>{});
+      }else if(!on&&fsElement()){
+        const exit=document.exitFullscreen||document.webkitExitFullscreen;
+        const r=exit&&exit.call(document);
+        if(r&&r.catch)r.catch(()=>{});
+      }
+    }catch(e){}
+  }
+  // Leaving full screen with Esc or the browser's own controls also shrinks the layout.
+  const onFsChange=()=>{if(!fsElement()&&document.body.classList.contains('expanded'))setExpanded(false);};
+  document.addEventListener('fullscreenchange',onFsChange);
+  document.addEventListener('webkitfullscreenchange',onFsChange);
+  maxBtn.addEventListener('click',toggleExpanded);
+  document.getElementById('greenLight').addEventListener('click',toggleExpanded);
   window.addEventListener('resize',resizeBoard);
   if(window.visualViewport) window.visualViewport.addEventListener('resize',resizeBoard);
   if('ResizeObserver' in window) new ResizeObserver(resizeBoard).observe(boardSlot);
