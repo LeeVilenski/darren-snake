@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#141f36">
-<title>Darren Snake.app | Version 23 - Sound Remap</title>
+<title>Darren Snake.app | Version 25 - Leaderboard</title>
 <!-- Bonus teeth from Level 2; RAM Gigaboo rounds from Level 3; real recorded catchphrase effects. -->
 <style>
 :root{--bg:#071911;--panel:#0e2a22;--line:#245d49;--muted:#a8cbb7;--text:#edfff6;--lime:#bdff6b;--cyan:#55f1ce;--cream:#fff4cf;--mayo:#f8efcf;--gold:#e9c773}
@@ -170,6 +170,38 @@ p.subtitle{font-size:11px;color:#b3c4db;margin-bottom:9px}
 .ram-message-title{font-weight:1000;letter-spacing:.08em;font-size:clamp(16px,4vw,27px);color:#9cffe4;text-shadow:0 0 10px #002b30,0 3px 5px #000}
 .ram-message-number{font-size:clamp(70px,21vw,124px);font-weight:950;line-height:1.05;color:#fff;filter:drop-shadow(0 0 10px #4edcbd)}
 .ram-message-caption{font-size:clamp(10px,2.6vw,15px);font-weight:900;max-width:90%;text-shadow:0 3px 5px #000;line-height:1.4}
+/* Online leaderboard */
+.lb{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));background:#020a07cc;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.lb.hidden,.lb-submit.hidden,.lb-btn.hidden{display:none}
+.lb-card{width:min(100%,420px);max-height:100%;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;border:1px solid var(--line);border-radius:16px;background:linear-gradient(160deg,#143a2d,#0a231b);padding:14px 14px 10px;box-shadow:0 20px 50px #000a}
+.lb-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.lb-head h2{margin:0;font-size:clamp(19px,5vw,24px);letter-spacing:-.03em}
+.lb-close{border:1px solid #3b755b;background:#14372a;color:var(--text);border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;touch-action:manipulation}
+.lb-submit{border:1px solid #548262;background:#173f2c;border-radius:12px;padding:10px;margin-bottom:10px}
+.lb-yours{margin:0 0 7px;font-size:13px;color:#d3fb93;font-weight:700}
+.lb-entry{display:flex;gap:7px}
+.lb-entry input{flex:1;min-width:0;border:1px solid #66b684;border-radius:9px;background:#071911;color:var(--text);font:600 16px system-ui;padding:8px 10px;touch-action:manipulation;user-select:text;-webkit-user-select:text}
+.lb-entry input:focus{outline:2px solid var(--lime);outline-offset:1px}
+.lb-entry .primary{padding:8px 14px;min-height:40px;font-size:14px}
+.lb-entry .primary:disabled{opacity:.6;cursor:default}
+.lb-status{min-height:1.4em;margin:0 0 6px;font-size:12px;color:var(--muted)}
+.lb-status.error{color:#ffb6c1}
+.lb-list{list-style:none;margin:0;padding:0}
+.lb-list li{display:grid;grid-template-columns:2.2em 1fr auto auto;gap:8px;align-items:center;padding:7px 8px;border-radius:8px;font-size:14px;font-variant-numeric:tabular-nums}
+.lb-list li:nth-child(odd){background:#0e2a2299}
+.lb-list li.me{background:#2f5a1f;outline:1px solid var(--lime)}
+.lb-rank{font-weight:900;color:var(--cyan)}
+.lb-list li:nth-child(1) .lb-rank{color:#ffd76a}
+.lb-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+.lb-lvl{font-size:11px;color:var(--muted)}
+.lb-pts{font-weight:900;color:var(--lime)}
+.lb-empty{color:var(--muted);font-size:13px;text-align:center;padding:12px 0}
+.bsod-actions{display:flex;gap:7px;justify-content:center}
+.bsod-actions .bsod-reboot{flex:1 1 0;min-width:0;padding-left:8px;padding-right:8px;line-height:1.2}
+.bsod .bsod-alt{background:#fff;color:#2c6ad8;border:1px solid #4d83e0;box-shadow:none}
+.bsod .bsod-alt:active{background:#e8f0ff}
+@media(max-width:420px){.actions{gap:6px}.actions .secondary{font-size:12px;padding:0 3px;white-space:nowrap}}
+.overlay .lb-btn{display:block;margin:9px auto 0;flex:none;padding:8px 16px}
 </style>
 </head>
 <body>
@@ -199,7 +231,7 @@ p.subtitle{font-size:11px;color:#b3c4db;margin-bottom:9px}
       <div class="ram-message-caption" id="ramMessageCaption">COLLECT 2, 4, 8 &amp; 16 GB · +2,000 POINTS</div>
     </div>
     <div class="overlay" id="overlay" aria-live="polite">
-      <div class="overlay-card"><div class="symbol" id="symbol">🫙</div><h2 id="message">Ready to open Darren Snake?</h2><p id="detail">Mayo +100 · Teeth +200 (Level 2+) · Random RAM Gigaboo challenges (Level 3+)!</p><button class="primary" id="bigButton">▶ Open game</button></div>
+      <div class="overlay-card"><div class="symbol" id="symbol">🫙</div><h2 id="message">Ready to open Darren Snake?</h2><p id="detail">Mayo +100 · Teeth +200 (Level 2+) · Random RAM Gigaboo challenges (Level 3+)!</p><button class="primary" id="bigButton">▶ Open game</button><button class="secondary lb-btn hidden" id="overlaySubmit">🏆 Submit score</button></div>
     </div>
     <div class="countdown hidden" id="countdown" aria-live="off" aria-label="Next level starts in three seconds">
       <div class="countdown-chip"><span>LEVEL <b id="countdownLevel">2</b> · GET READY</span><strong id="countdownNumber">3</strong></div>
@@ -221,15 +253,26 @@ p.subtitle{font-size:11px;color:#b3c4db;margin-bottom:9px}
         <h2 id="bsodHeading">Darren Snake quit unexpectedly.</h2>
         <p id="bsodDescription">The app experienced an unexpected mayo-related error.</p>
         <div class="crash-log"><p id="bsodScore">0 jars of mayo recovered.</p><p class="error-code" id="bsodReason">Exception: MAYO_NOT_FOUND</p></div>
-        <button id="rebootBtn" class="bsod-reboot">Reopen Darren Snake</button>
+        <div class="bsod-actions"><button id="rebootBtn" class="bsod-reboot">Reopen Darren Snake</button><button id="bsodSubmit" class="bsod-reboot bsod-alt lb-btn hidden">🏆 Submit score</button></div>
       </div>
     </div>
   </div>
   </div>
-  <div class="actions"><button class="secondary" id="pauseBtn" disabled>⏸ Pause</button><button class="secondary" id="restartBtn">↻ New game</button><button class="secondary" id="soundBtn" aria-label="Mute game sounds" aria-pressed="true">🔊 Sound</button></div>
+  <div class="actions"><button class="secondary" id="pauseBtn" disabled>⏸ Pause</button><button class="secondary" id="restartBtn">↻ New game</button><button class="secondary" id="soundBtn" aria-label="Mute game sounds" aria-pressed="true">🔊 Sound</button><button class="secondary" id="lbBtn">🏆 Scores</button></div>
   <div class="controls"><div class="help"><strong>How to play</strong><br>Swipe the board or use <strong>↑ ↓ ← →</strong> / WASD.<br>Mayo +100 · Tooth +200 · RAM Gigaboo +2,000 (Level 3+).<br>Avoid faulty PCs. <strong>Space</strong> pauses.</div><div class="dpad" aria-label="Direction controls"><button class="up" data-dir="up" aria-label="Up">↑</button><button class="left" data-dir="left" aria-label="Left">←</button><button class="down" data-dir="down" aria-label="Down">↓</button><button class="right" data-dir="right" aria-label="Right">→</button></div></div>
-  <p class="footer">Offline-ready · Mac-style interface · No downloads beyond this HTML</p>
+  <p class="footer">Mac-style interface · Online leaderboard · Plays offline too</p>
 </main>
+<div class="lb hidden" id="lb" role="dialog" aria-modal="true" aria-labelledby="lbTitle">
+  <div class="lb-card">
+    <div class="lb-head"><h2 id="lbTitle">🏆 Leaderboard</h2><button class="lb-close" id="lbClose" aria-label="Close leaderboard">✕</button></div>
+    <div class="lb-submit hidden" id="lbSubmit">
+      <p class="lb-yours" id="lbYours">Your score</p>
+      <div class="lb-entry"><input id="lbName" maxlength="16" autocomplete="nickname" enterkeyhint="send" placeholder="Your name" aria-label="Your name"><button class="primary" id="lbSend">Submit</button></div>
+    </div>
+    <p class="lb-status" id="lbStatus" role="status"></p>
+    <ol class="lb-list" id="lbList"></ol>
+  </div>
+</div>
 <script>
 (()=>{
   'use strict';
@@ -239,6 +282,8 @@ p.subtitle{font-size:11px;color:#b3c4db;margin-bottom:9px}
   const pauseBtn=document.getElementById('pauseBtn'),restartBtn=document.getElementById('restartBtn'),soundBtn=document.getElementById('soundBtn'),board=document.getElementById('board'),boardSlot=document.getElementById('boardSlot'),systemStatus=document.getElementById('systemStatus');
   const bsod=document.getElementById('bsod'),bsodScore=document.getElementById('bsodScore'),bsodReason=document.getElementById('bsodReason'),bsodHeading=document.getElementById('bsodHeading'),bsodDescription=document.getElementById('bsodDescription'),rebootBtn=document.getElementById('rebootBtn');
   const bootScreen=document.getElementById('bootScreen');
+  const overlaySubmit=document.getElementById('overlaySubmit');
+  let lastGame=null;
   const countdown=document.getElementById('countdown'),countdownNumber=document.getElementById('countdownNumber'),countdownLevel=document.getElementById('countdownLevel');
   const ramHud=document.getElementById('ramHud'),ramCountEl=document.getElementById('ramCount'),ramTimerEl=document.getElementById('ramTimer');
   const ramMessage=document.getElementById('ramMessage'),ramMessageTitle=document.getElementById('ramMessageTitle'),ramMessageNumber=document.getElementById('ramMessageNumber'),ramMessageCaption=document.getElementById('ramMessageCaption');
@@ -507,6 +552,7 @@ p.subtitle{font-size:11px;color:#b3c4db;margin-bottom:9px}
   }
 
   function show(title,detail,symbol,button){
+    overlaySubmit.classList.add('hidden');
     messageEl.textContent=title;detailEl.textContent=detail;symbolEl.textContent=symbol;bigButton.textContent=button;overlay.classList.remove('hidden');
   }
 
@@ -534,7 +580,7 @@ p.subtitle{font-size:11px;color:#b3c4db;margin-bottom:9px}
     const firstStart=!hasStartedOnce;
     hasStartedOnce=true;
     stopRecordedSounds();
-    reset();state='booting';
+    reset();state='booting';lastGame=null;setSubmitButtons();
     overlay.classList.add('hidden');bsod.classList.add('hidden');countdown.classList.add('hidden');
     pauseBtn.disabled=true;pauseBtn.textContent='⏸ Pause';
     // Every new round after the initial boot goes straight to the board.
@@ -590,8 +636,8 @@ p.subtitle{font-size:11px;color:#b3c4db;margin-bottom:9px}
   }
 
   function end(win=false,cause='WALL_COLLISION'){
-    state='over';countdown.classList.add('hidden');pauseBtn.disabled=true;systemStatus.className=win?'tag':'tag offline';systemStatus.textContent=win?'● MAYO MASTER':'● APP CRASHED';
-    if(win){bsod.classList.add('hidden');show('MAYO OVERLOAD!','You cleared the whole board and claimed every last jar.','🏆','Play again');sound('level');return;}
+    state='over';lastGame={score,level,mayo:mayoCount,durationMs:Math.round(activePlayMs),submitted:false};setSubmitButtons();countdown.classList.add('hidden');pauseBtn.disabled=true;systemStatus.className=win?'tag':'tag offline';systemStatus.textContent=win?'● MAYO MASTER':'● APP CRASHED';
+    if(win){bsod.classList.add('hidden');show('MAYO OVERLOAD!','You cleared the whole board and claimed every last jar.','🏆','Play again');setSubmitButtons();sound('level');return;}
     sound('crash');overlay.classList.add('hidden');
     bsodScore.textContent=score+' points · '+mayoCount+' mayo jar'+(mayoCount===1?'':'s')+' recovered. IT level '+level+'.';
     const codes={WALL_COLLISION:'EXC_NETWORK_BOUNDARY',SELF_COLLISION:'EXC_DUPLICATE_DARREN',HARDWARE_FAILURE:'EXC_HARDWARE_FAULT'};
@@ -1210,6 +1256,8 @@ p.subtitle{font-size:11px;color:#b3c4db;margin-bottom:9px}
   }
 
   document.addEventListener('keydown',e=>{
+    if(!lb.classList.contains('hidden')){if(e.key==='Escape')closeLeaderboard();return;}
+    if(e.target&&e.target.tagName==='INPUT')return;
     const k=e.key.toLowerCase();
     const map={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
     if(map[k]){e.preventDefault();changeDir(map[k]);}
@@ -1217,7 +1265,7 @@ p.subtitle{font-size:11px;color:#b3c4db;margin-bottom:9px}
   });
 
   document.querySelectorAll('[data-dir]').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();changeDir(b.dataset.dir);}));
-  document.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+  document.addEventListener('touchmove',e=>{if(e.target.closest&&e.target.closest('.lb-card'))return;e.preventDefault();},{passive:false});
   let sx=0,sy=0;
   const SWIPE_THRESHOLD=13;
   function steerSwipe(x,y){
@@ -1253,6 +1301,81 @@ p.subtitle{font-size:11px;color:#b3c4db;margin-bottom:9px}
   window.addEventListener('resize',resizeBoard);
   if(window.visualViewport) window.visualViewport.addEventListener('resize',resizeBoard);
   if('ResizeObserver' in window) new ResizeObserver(resizeBoard).observe(boardSlot);
+
+  // ---- Online leaderboard (Vercel function at /api/scores) ----
+  const lb=document.getElementById('lb'),lbList=document.getElementById('lbList'),lbStatus=document.getElementById('lbStatus');
+  const lbSubmit=document.getElementById('lbSubmit'),lbYours=document.getElementById('lbYours'),lbName=document.getElementById('lbName'),lbSend=document.getElementById('lbSend');
+  const lbBtn=document.getElementById('lbBtn'),lbClose=document.getElementById('lbClose'),bsodSubmit=document.getElementById('bsodSubmit');
+  const LB_NAME_KEY='darren-snake-lb-name';
+  let lbLoading=0;
+  function setSubmitButtons(){
+    const can=!!(lastGame&&!lastGame.submitted&&lastGame.score>0&&state==='over');
+    bsodSubmit.classList.toggle('hidden',!can);
+    overlaySubmit.classList.toggle('hidden',!(can&&!overlay.classList.contains('hidden')));
+  }
+  function setStatus(text,isError){lbStatus.textContent=text;lbStatus.classList.toggle('error',!!isError);}
+  function renderScores(rows,highlight){
+    lbList.textContent='';
+    if(!rows.length){const li=document.createElement('li');li.className='lb-empty';li.textContent='No scores yet. Be the first!';lbList.appendChild(li);return;}
+    const me=highlight?highlight.toLowerCase():null;
+    rows.forEach((r,i)=>{
+      const li=document.createElement('li');
+      if(me&&r.name.toLowerCase()===me)li.className='me';
+      [[i+1,'lb-rank'],[r.name,'lb-name'],['Lvl '+r.level,'lb-lvl'],[Number(r.score).toLocaleString('en-GB'),'lb-pts']].forEach(([t,c])=>{
+        const sp=document.createElement('span');sp.className=c;sp.textContent=t;li.appendChild(sp);
+      });
+      lbList.appendChild(li);
+    });
+  }
+  async function loadScores(){
+    const run=++lbLoading;
+    setStatus('Loading scores…');
+    try{
+      const r=await fetch('/api/scores',{cache:'no-store'});
+      const data=await r.json();
+      if(run!==lbLoading)return;
+      if(!r.ok)throw new Error(data.error||'error');
+      renderScores(data.scores||[]);setStatus('');
+    }catch(e){if(run===lbLoading){lbList.textContent='';setStatus('The leaderboard is offline right now.',true);}}
+  }
+  function openLeaderboard(withSubmit){
+    if(state==='playing'||state==='ramPlaying'||state==='ramIntro')togglePause();
+    else if(state==='countdown'){countdown.classList.add('hidden');state='levelup';show('LEVEL '+level+' READY','Your new hardware is on the board. Continue when you are ready.','🖥️','▶ Continue');}
+    const canSubmit=withSubmit&&lastGame&&!lastGame.submitted&&lastGame.score>0;
+    lbSubmit.classList.toggle('hidden',!canSubmit);
+    if(canSubmit){
+      lbYours.textContent='Your score: '+lastGame.score.toLocaleString('en-GB')+' points · Level '+lastGame.level;
+      try{lbName.value=localStorage.getItem(LB_NAME_KEY)||'';}catch(e){}
+      lbSend.disabled=false;
+    }
+    lb.classList.remove('hidden');
+    loadScores();
+    if(canSubmit)setTimeout(()=>lbName.focus(),50);
+  }
+  function closeLeaderboard(){lb.classList.add('hidden');lbName.blur();}
+  async function submitScore(){
+    if(!lastGame||lastGame.submitted||lbSend.disabled)return;
+    const name=lbName.value.replace(/\s+/g,' ').trim();
+    if(name.length<2){setStatus('Enter a name of at least 2 characters.',true);lbName.focus();return;}
+    lbSend.disabled=true;lbLoading++;setStatus('Submitting…');
+    try{
+      const r=await fetch('/api/scores',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,...lastGame,submitted:undefined})});
+      const data=await r.json().catch(()=>({}));
+      if(!r.ok){setStatus(data.error||'Could not submit your score.',true);lbSend.disabled=false;return;}
+      lastGame.submitted=true;setSubmitButtons();
+      try{localStorage.setItem(LB_NAME_KEY,name);}catch(e){}
+      lbSubmit.classList.add('hidden');
+      renderScores(data.scores||[],name);
+      setStatus('Saved! '+name+' is #'+data.rank+' with a best of '+Number(data.best).toLocaleString('en-GB')+' points.');
+    }catch(e){setStatus('The leaderboard is offline right now.',true);lbSend.disabled=false;}
+  }
+  lbBtn.addEventListener('click',()=>openLeaderboard(state==='over'));
+  bsodSubmit.addEventListener('click',()=>openLeaderboard(true));
+  overlaySubmit.addEventListener('click',()=>openLeaderboard(true));
+  lbClose.addEventListener('click',closeLeaderboard);
+  lb.addEventListener('click',e=>{if(e.target===lb)closeLeaderboard();});
+  lbSend.addEventListener('click',submitScore);
+  lbName.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();submitScore();}});
 
   reset(); resizeBoard(); requestAnimationFrame(frame);
 })();
