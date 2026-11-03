@@ -132,25 +132,11 @@ p.subtitle{font-size:11px;color:#b3c4db;margin-bottom:9px}
 .bsod .bsod-reboot{border:1px solid #4d83e0;border-radius:9px;background:linear-gradient(145deg,#5d9cf6,#3176e8);color:#fff;min-height:42px;padding:9px 17px;box-shadow:0 4px 12px #3176e84d;font-size:13px}
 .bsod .bsod-reboot:active{background:#3068c5}
 @media(max-width:380px){.brand-sub{display:none}.traffic-lights i{width:10px;height:10px}.mac-titlebar .tag{font-size:8px}}
-@media(max-height:680px){main{padding-top:5px;padding-bottom:5px}.topline.mac-titlebar{margin-bottom:5px;padding-bottom:6px}h1{margin-bottom:4px}.bsod-content{padding:12px}.crash-symbol{width:36px;height:36px;font-size:26px}}
-@media(max-height:530px){.mac-titlebar .tag{display:none}.crash-eyebrow{display:none}.bsod h2{margin-bottom:5px}}
+@media(max-height:680px){main{padding-top:5px;padding-bottom:5px}.topline.mac-titlebar{margin-bottom:5px;padding-bottom:6px}h1{margin-bottom:4px}}
+@media(max-height:530px){.mac-titlebar .tag{display:none}}
 @media(prefers-reduced-motion:reduce){.boot-spinner span{animation:none}}
 
 
-/* On short phones the crash report must fit inside the square game board,
-   including its Reopen button (the canvas deliberately clips overflow). */
-@media(max-height:700px){
-  .bsod{padding:6px}
-  .bsod-content{padding:9px 10px;border-radius:12px}
-  .crash-symbol{width:28px;height:28px;font-size:19px;margin-bottom:3px;border-radius:8px}
-  .crash-eyebrow{font-size:8px;line-height:1.15;margin-bottom:3px}
-  .bsod h2{font-size:clamp(14px,4vw,18px);line-height:1.12;margin-bottom:5px}
-  .bsod p{font-size:10px;line-height:1.22;margin:0 0 4px}
-  .crash-log{padding:5px 6px;margin-bottom:7px}
-  .crash-log p{font-size:9px;line-height:1.2;margin-bottom:2px}
-  .bsod .error-code{font-size:9px}
-  .bsod .bsod-reboot{font-size:11px;min-height:34px;padding:7px 10px}
-}
 @media(max-width:360px){.actions{gap:5px}.secondary{font-size:11px}.stat{padding-left:8px;padding-right:8px}}
 
 /* Expanded (maximised) view: hide the extras so the board fills the screen. */
@@ -190,8 +176,6 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
 .vs-hidden{display:none!important}
 .ram-message.life .ram-message-number{font-size:clamp(30px,9vw,54px);white-space:nowrap;letter-spacing:.05em;margin:6px 0}
 .bsod .bsod-vs{display:block;margin:8px auto 0;background:none;border:0;color:#3176e8;font:700 12px system-ui;cursor:pointer;padding:4px 8px;touch-action:manipulation}
-/* Short phones have no room left on the crash card. */
-@media(max-height:700px){.bsod .bsod-vs{display:none}}
 
 /* Darren's occasional sayings: lightweight, non-blocking notification */
 .catchphrase{position:absolute;z-index:3;left:50%;top:9%;transform:translate(-50%,-6px) scale(.94);pointer-events:none;
@@ -240,6 +224,60 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
 .bsod-actions .bsod-reboot{flex:1 1 0;min-width:0;padding-left:8px;padding-right:8px;line-height:1.2}
 .bsod .bsod-alt{background:#fff;color:#2c6ad8;border:1px solid #4d83e0;box-shadow:none}
 .bsod .bsod-alt:active{background:#e8f0ff}
+/* The crash report must fit inside the square board, which clips overflow.
+   The board's size depends on the whole layout, not just the viewport, so the
+   card is sized against the board itself (a container query). Each step down
+   hides the next least important line. If it still doesn't fit, the card
+   scrolls instead of being cut off (margin:auto keeps its top reachable). */
+.board-wrap{container:crash/size}
+.bsod{overflow:auto;overscroll-behavior:contain}
+.bsod-content{margin:auto}
+@container crash (max-height:420px){.bsod-content{padding:16px 18px}}
+@container crash (max-height:380px){
+  .bsod{padding:6px}
+  .bsod-content{padding:9px 10px;border-radius:12px}
+  .crash-symbol{width:28px;height:28px;font-size:19px;margin-bottom:3px;border-radius:8px}
+  .crash-eyebrow{font-size:8px;line-height:1.15;margin-bottom:3px}
+  .bsod h2{font-size:clamp(14px,4vw,18px);line-height:1.12;margin-bottom:5px}
+  .bsod p{font-size:10px;line-height:1.22;margin:0 0 4px}
+  .crash-log{padding:5px 6px;margin-bottom:7px}
+  .crash-log p{font-size:9px;line-height:1.2;margin-bottom:2px}
+  .bsod .error-code{font-size:9px}
+  .bsod .bsod-reboot{font-size:11px;min-height:34px;padding:7px 10px}
+  .bsod .bsod-vs{margin-top:3px;padding:3px 8px;font-size:11px}
+}
+.btn-icon{display:none}
+@container crash (max-width:300px){.btn-long{display:none}}
+@container crash (max-width:80px){.btn-word{display:none}.btn-icon{display:inline;font-size:15px}}
+@container crash (max-height:270px){
+  .crash-eyebrow,.bsod .bsod-vs{display:none}
+  .bsod h2{font-size:15px}
+}
+@container crash (max-height:220px){
+  .bsod{padding:5px}
+  .bsod-content{padding:7px 8px}
+  .crash-symbol,.bsod .error-code{display:none}
+  .crash-log{margin-bottom:6px}
+  .bsod .bsod-reboot{min-height:32px;padding:6px 8px}
+}
+@container crash (max-height:150px){
+  .bsod p,.crash-log{display:none}
+  .bsod h2{font-size:12px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bsod .bsod-reboot{min-height:28px;padding:4px 6px}
+}
+@container crash (max-height:80px){
+  .bsod{padding:3px}
+  .bsod-content{padding:3px;border-radius:9px}
+  .bsod h2{display:none}
+  .bsod-actions{gap:3px}
+  .bsod .bsod-reboot{min-height:0;height:clamp(10px,calc(100cqh - 14px),32px);padding:0 4px;font-size:10px;border-radius:7px}
+}
+/* Tiny boards: keep only Reopen; 🏆 Scores under the board still opens the leaderboard. */
+@container crash (max-width:150px){
+  .bsod #bsodSubmit{display:none}
+  .bsod .bsod-reboot{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+@container crash (max-height:40px){.bsod .bsod-content{padding:1px}.bsod{padding:1px}}
 @media(max-width:420px){.actions{gap:6px}.actions .secondary{font-size:12px;padding:0 3px;white-space:nowrap}}
 .overlay .lb-btn{display:block;margin:9px auto 0;flex:none;padding:8px 16px}.overlay .lb-btn.hidden{display:none}
 </style>
@@ -300,7 +338,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
         <h2 id="bsodHeading">Darren Snake quit unexpectedly.</h2>
         <p id="bsodDescription">The app experienced an unexpected mayo-related error.</p>
         <div class="crash-log"><p id="bsodScore">0 jars of mayo recovered.</p><p class="error-code" id="bsodReason">Exception: MAYO_NOT_FOUND</p></div>
-        <div class="bsod-actions"><button id="rebootBtn" class="bsod-reboot">Reopen Darren Snake</button><button id="bsodSubmit" class="bsod-reboot bsod-alt lb-btn hidden">🏆 Submit score</button></div>
+        <div class="bsod-actions"><button id="rebootBtn" class="bsod-reboot" aria-label="Reopen Darren Snake"><span class="btn-icon" aria-hidden="true">↻</span><span class="btn-word">Reopen</span><span class="btn-long"> Darren Snake</span></button><button id="bsodSubmit" class="bsod-reboot bsod-alt lb-btn hidden">🏆 Submit<span class="btn-long"> score</span></button></div>
         <button class="bsod-vs" id="bsodVs">⚔️ Play versus</button>
       </div>
     </div>
