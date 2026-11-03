@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#141f36">
-<title>Darren Snake.app | Version 25 - Leaderboard</title>
+<title>Darren Snake.app | Version 26 - RAM Countdown</title>
 <!-- Bonus teeth from Level 2; RAM Gigaboo rounds from Level 3; real recorded catchphrase effects. -->
 <style>
 :root{--bg:#071911;--panel:#0e2a22;--line:#245d49;--muted:#a8cbb7;--text:#edfff6;--lime:#bdff6b;--cyan:#55f1ce;--cream:#fff4cf;--mayo:#f8efcf;--gold:#e9c773}
@@ -618,8 +618,12 @@ p.subtitle{font-size:11px;color:#b3c4db;margin-bottom:9px}
     // The next mayo jar was already placed when the level was unlocked.
     particles=[];
     if(!fruit){end(true);return;}
-    state='countdown';
     overlay.classList.add('hidden');
+    startCountdown();
+  }
+  // Same 3-second "get ready" countdown after a level up and after a RAM round.
+  function startCountdown(){
+    state='countdown';lastTime=0;accum=0;lastMoveAt=0;
     countdownLevel.textContent=String(level);
     countdownNumber.textContent='3';
     countdownEnd=performance.now()+3000;
@@ -841,11 +845,9 @@ p.subtitle{font-size:11px;color:#b3c4db;margin-bottom:9px}
     nextDir={...dir};turnQueue=[];particles=[];
     ramSession=null;ramPieces=[];
     ramHud.classList.add('hidden');ramMessage.classList.add('hidden');
-    state='playing';lastTime=0;accum=0;lastMoveAt=0;
-    pauseBtn.disabled=false;pauseBtn.textContent='⏸ Pause';
-    systemStatus.className='tag';systemStatus.textContent='● APP RUNNING';
     scheduleRam(false);
     if(original.won)addPoints(2000);
+    startCountdown();
   }
   function ramTick(){
     if(performance.now()>=ramDeadline){finishRamChallenge(false);return;}
@@ -1232,7 +1234,7 @@ p.subtitle{font-size:11px;color:#b3c4db;margin-bottom:9px}
     if(state==='countdown'){
       const remaining=countdownEnd-t;
       if(remaining<=0)finishCountdown();
-      else{const n=Math.ceil(remaining/1000);countdownNumber.textContent=String(n);systemStatus.textContent='◌ READY IN '+n;}
+      else{const n=Math.min(3,Math.ceil(remaining/1000));countdownNumber.textContent=String(n);systemStatus.textContent='◌ READY IN '+n;}
     }
     if(state==='playing'||state==='ramPlaying'){
       if(state==='playing'&&level>=3&&nextRamAtMs!==Infinity&&activePlayMs>=nextRamAtMs)startRamChallenge();
