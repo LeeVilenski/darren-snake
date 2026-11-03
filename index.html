@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#141f36">
-<title>Darren Snake.app | Version 27 - Expand</title>
+<title>Darren Snake.app | Version 28 - Versus</title>
 <!-- Bonus teeth from Level 2; RAM Gigaboo rounds from Level 3; real recorded catchphrase effects. -->
 <style>
 :root{--bg:#071911;--panel:#0e2a22;--line:#245d49;--muted:#a8cbb7;--text:#edfff6;--lime:#bdff6b;--cyan:#55f1ce;--cream:#fff4cf;--mayo:#f8efcf;--gold:#e9c773}
@@ -163,6 +163,36 @@ body.expanded h1,body.expanded .subtitle,body.expanded .footer,body.expanded .he
 body.expanded .controls{justify-content:center;grid-template-columns:auto}
 @media(pointer:fine){body.expanded .controls{display:none}}
 
+/* Versus mode */
+.vs-bar{display:flex;align-items:center;gap:8px;margin:-2px 0 6px;padding:5px 10px;border-radius:11px;border:1px solid #ffffff2a;background:#ffffff11;font-size:12px;font-weight:700;flex-shrink:0;min-width:0;font-variant-numeric:tabular-nums}
+.vs-bar.hidden{display:none}
+.vs-side{display:flex;align-items:center;gap:6px;min-width:0}
+.vs-side.opp{margin-left:auto;justify-content:flex-end}
+.vs-side b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:9em}
+.vs-hearts{letter-spacing:-.08em;white-space:nowrap;font-size:11px}
+.vs-next{color:#d8e9a0;font-size:11px;white-space:nowrap}
+.vs-opp-score{color:#a4ffcf}
+.vs-toast{position:absolute;z-index:4;left:50%;bottom:7%;transform:translateX(-50%);padding:7px 14px;border-radius:999px;border:1px solid #d9f08caa;background:#2d3a14ee;color:#f4ffd6;font:800 clamp(12px,3.2vw,16px)/1.3 system-ui,sans-serif;white-space:nowrap;pointer-events:none;box-shadow:0 4px 15px #0008}
+.vs-toast.hidden{display:none}
+.vs-toast.bad{background:#4a2a12ee;border-color:#ffc27aaa;color:#fff1dd}
+.vs-intro{font-size:13px;color:var(--muted);margin:0 0 12px;line-height:1.45}
+.vs-label{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
+.vs-field{margin-bottom:12px}
+.vs-field input,#vsCode{width:100%;border:1px solid #8dadd4;border-radius:9px;background:#0c1829;color:var(--text);font:600 16px system-ui;padding:8px 10px;user-select:text;-webkit-user-select:text;touch-action:manipulation}
+#vsCode{text-transform:uppercase;letter-spacing:.3em;font-weight:800}
+.vs-field input:focus,#vsCode:focus{outline:2px solid var(--cyan);outline-offset:1px}
+.vs-wide{width:100%}
+.vs-or{display:flex;align-items:center;gap:8px;margin:12px 0 8px;color:var(--muted);font-size:12px}
+.vs-or::before,.vs-or::after{content:"";flex:1;border-top:1px solid #ffffff2a}
+.vs-code{font:900 44px/1.1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.2em;text-align:center;color:#fff;margin:6px 0 12px;user-select:text;-webkit-user-select:text}
+.vs-row{display:flex;gap:8px}
+.vs-row .secondary{min-height:38px}
+.vs-hidden{display:none!important}
+.ram-message.life .ram-message-number{font-size:clamp(30px,9vw,54px);white-space:nowrap;letter-spacing:.05em;margin:6px 0}
+.bsod .bsod-vs{display:block;margin:8px auto 0;background:none;border:0;color:#3176e8;font:700 12px system-ui;cursor:pointer;padding:4px 8px;touch-action:manipulation}
+/* Short phones have no room left on the crash card. */
+@media(max-height:700px){.bsod .bsod-vs{display:none}}
+
 /* Darren's occasional sayings: lightweight, non-blocking notification */
 .catchphrase{position:absolute;z-index:3;left:50%;top:9%;transform:translate(-50%,-6px) scale(.94);pointer-events:none;
   padding:7px 14px;border-radius:999px;border:1px solid #bfffe8aa;
@@ -229,8 +259,14 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
     <div class="stat"><span class="label">Best points</span><strong id="best">0</strong></div>
     <div class="stat"><span class="label" id="levelGoal">Level · 0/4</span><strong id="level">1</strong></div>
   </section>
+  <div class="vs-bar hidden" id="vsBar" aria-live="polite">
+    <span class="vs-side"><b>You</b><span class="vs-hearts" id="vsMyLives">❤️❤️❤️</span></span>
+    <span class="vs-next" id="vsNext">🤮 in 1,500</span>
+    <span class="vs-side opp"><b id="vsOppName">Opponent</b><span class="vs-opp-score" id="vsOppScore">0</span><span class="vs-hearts" id="vsOppLives">❤️❤️❤️</span></span>
+  </div>
   <div class="board-slot" id="boardSlot"><div class="board-wrap" id="board">
     <canvas id="game" width="600" height="600" aria-label="Snake game board"></canvas>
+    <div class="vs-toast hidden" id="vsToast" role="status"></div>
     <div class="ram-hud hidden" id="ramHud" aria-live="off">
       <span class="ram-label">▣ RAM GIGABOO</span>
       <span id="ramCount">0 / 4</span>
@@ -242,7 +278,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
       <div class="ram-message-caption" id="ramMessageCaption">COLLECT 2, 4, 8 &amp; 16 GB · +2,000 POINTS</div>
     </div>
     <div class="overlay" id="overlay" aria-live="polite">
-      <div class="overlay-card"><div class="symbol" id="symbol">🫙</div><h2 id="message">Ready to open Darren Snake?</h2><p id="detail">Mayo +100 · Teeth +200 (Level 2+) · Random RAM Gigaboo challenges (Level 3+)!</p><button class="primary" id="bigButton">▶ Open game</button><button class="secondary lb-btn hidden" id="overlaySubmit">🏆 Submit score</button></div>
+      <div class="overlay-card"><div class="symbol" id="symbol">🫙</div><h2 id="message">Ready to open Darren Snake?</h2><p id="detail">Mayo +100 · Teeth +200 (Level 2+) · Random RAM Gigaboo challenges (Level 3+)!</p><button class="primary" id="bigButton">▶ Open game</button><button class="secondary lb-btn hidden" id="overlaySubmit">🏆 Submit score</button><button class="secondary lb-btn" id="vsOpen">⚔️ Versus</button></div>
     </div>
     <div class="countdown hidden" id="countdown" aria-live="off" aria-label="Next level starts in three seconds">
       <div class="countdown-chip"><span>LEVEL <b id="countdownLevel">2</b> · GET READY</span><strong id="countdownNumber">3</strong></div>
@@ -265,6 +301,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
         <p id="bsodDescription">The app experienced an unexpected mayo-related error.</p>
         <div class="crash-log"><p id="bsodScore">0 jars of mayo recovered.</p><p class="error-code" id="bsodReason">Exception: MAYO_NOT_FOUND</p></div>
         <div class="bsod-actions"><button id="rebootBtn" class="bsod-reboot">Reopen Darren Snake</button><button id="bsodSubmit" class="bsod-reboot bsod-alt lb-btn hidden">🏆 Submit score</button></div>
+        <button class="bsod-vs" id="bsodVs">⚔️ Play versus</button>
       </div>
     </div>
   </div>
@@ -282,6 +319,24 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
     </div>
     <p class="lb-status" id="lbStatus" role="status"></p>
     <ol class="lb-list" id="lbList"></ol>
+  </div>
+</div>
+<div class="lb hidden" id="vs" role="dialog" aria-modal="true" aria-labelledby="vsTitle">
+  <div class="lb-card">
+    <div class="lb-head"><h2 id="vsTitle">⚔️ Versus</h2><button class="lb-close" id="vsClose" aria-label="Close versus">✕</button></div>
+    <div id="vsSetup">
+      <p class="vs-intro">Play a friend 1-on-1 on your own boards. Every 1,500 points drops cat vomit 🤮 on your opponent's board. 3 lives each: last Darren standing wins.</p>
+      <div class="vs-field"><label class="vs-label" for="vsName">Your name</label><input id="vsName" maxlength="16" autocomplete="nickname" placeholder="Your name"></div>
+      <button class="primary vs-wide" id="vsCreate">Create match</button>
+      <div class="vs-or">or join a friend's match</div>
+      <div class="lb-entry"><input id="vsCode" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" placeholder="CODE" aria-label="Match code"><button class="primary" id="vsJoin">Join</button></div>
+    </div>
+    <div id="vsWait" class="vs-hidden">
+      <p class="vs-intro" id="vsWaitIntro">Send this code to your opponent:</p>
+      <div class="vs-code" id="vsCodeShow">----</div>
+      <div class="vs-row"><button class="secondary" id="vsCopy">🔗 Copy invite link</button><button class="secondary" id="vsCancel">Cancel</button></div>
+    </div>
+    <p class="lb-status" id="vsStatus" role="status"></p>
   </div>
 </div>
 <script>
@@ -303,6 +358,9 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
   let turnQueue=[],countdownEnd=0;
   let ramSession=null,ramPieces=[],ramDeadline=0,ramIntroEnd=0,ramResultEnd=0,ramPausedAt=0;
   let activePlayMs=0,nextRamAtMs=Infinity,ramRounds=0;
+  // Versus match (null in normal single-player games). See the Versus section below.
+  let vs=null,lifeLostEnd=0;
+  function inVersus(){return !!(vs&&vs.phase==='playing');}
   const RAM_LIMIT_MS=10000, RAM_GOAL=[2,4,8,16];
   function scheduleRam(first=false){nextRamAtMs=activePlayMs+(first?9000+Math.random()*10000:34000+Math.random()*25000);}
 
@@ -402,6 +460,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
     const t=ac.currentTime+.015;
     if(kind==='mayo'){note(659.25,t,.075,.040,'sine');note(880,t+.080,.11,.035,'sine');return;}
     if(kind==='tooth'){note(783.99,t,.095,.045,'triangle');note(1174.66,t+.11,.15,.046,'triangle');return;}
+    if(kind==='vomit'){note(196,t,.12,.06,'sawtooth');note(130.81,t+.10,.22,.06,'sawtooth');return;}
     if(kind==='ram'){note(783.99,t,.07,.045,'triangle');note(1046.5,t+.08,.09,.042,'triangle');}
     else if(kind==='ramWin'){[523.25,659.25,783.99,1046.5].forEach((f,i)=>note(f,t+i*.11,.23,.047,'triangle'));}
     else if(kind==='level'){
@@ -426,25 +485,27 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
     }
     return seen;
   }
-  function spawnHardware(){
+  function spawnHardware(forcedKind,relaxed){
     const head=snake[0],old=obstacles.length;
     const possibilities=[];
     for(let y=1;y<N-1;y++)for(let x=1;x<N-1;x++){
       if(inCentreStartArea(x,y)||snake.some(s=>s.x===x&&s.y===y)||blocked(x,y)||(fruit&&(fruit.x===x&&fruit.y===y))||(tooth&&(tooth.x===x&&tooth.y===y)))continue;
       if(Math.abs(x-head.x)+Math.abs(y-head.y)<3)continue;
-      if(obstacles.some(o=>Math.abs(o.x-x)+Math.abs(o.y-y)<2))continue;
+      if(!relaxed&&obstacles.some(o=>Math.abs(o.x-x)+Math.abs(o.y-y)<2))continue;
+      // Never drop an attack straight into Darren's path.
+      if(forcedKind&&[1,2,3].some(n=>head.x+dir.x*n===x&&head.y+dir.y*n===y))continue;
       possibilities.push({x,y});
     }
     // Shuffle; accept only placements that leave most of the board connected.
     for(let i=possibilities.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[possibilities[i],possibilities[j]]=[possibilities[j],possibilities[i]];}
     for(const pos of possibilities){
       const connected=reachableCells(head,(x,y)=>x===pos.x&&y===pos.y);
-      if(connected.size < (N*N-old-1)*.80)continue;
+      if(connected.size < (N*N-old-1)*(relaxed?.70:.80))continue;
       const openNeighbours=Object.values(DIRECTIONS).filter(d=>!blocked(pos.x+d.x,pos.y+d.y)).length;
-      if(openNeighbours<3)continue;
+      if(openNeighbours<(relaxed?2:3))continue;
       const kinds=['monitor','keyboard','server'];
-      const kind=kinds[(level-2)%kinds.length];
-      obstacles.push({...pos,kind});return kind;
+      const kind=forcedKind||kinds[(level-2)%kinds.length];
+      obstacles.push({...pos,kind,born:performance.now()});return kind;
     }
     return null;
   }
@@ -501,7 +562,9 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
   }
   function planNextTooth(){nextToothAt=mayoCount+3+Math.floor(Math.random()*4);}
   function addPoints(amount){
+    const before=score;
     score+=amount;scoreEl.textContent=score;
+    if(vs)versusPointsAdded(before);
     if(score>best){
       best=score;bestEl.textContent=best;
       try{localStorage.setItem(BEST_POINTS_KEY,String(best));}catch(e){}
@@ -578,7 +641,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
     bootScreen.classList.add('hidden');
     if(voicePlaying===voiceClips.hello)stopPickupVoice();
     state='playing';lastTime=0;accum=0;lastMoveAt=0;
-    pauseBtn.disabled=false;pauseBtn.textContent='⏸ Pause';
+    pauseBtn.disabled=inVersus();pauseBtn.textContent='⏸ Pause';
     systemStatus.className='tag';systemStatus.textContent='● APP RUNNING';
     // The greeting is played once, alongside the first boot recording.
   }
@@ -587,6 +650,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
     recordedBoot.addEventListener('error',()=>finishBoot(bootRunId));
   }
   function start(){
+    if(vs)versusQuit();
     const runId=++bootRunId;
     const firstStart=!hasStartedOnce;
     hasStartedOnce=true;
@@ -619,8 +683,9 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
     if(kind)newFeatures.push(names[kind]+' added');
     newFeatures.push('Collect '+jarsNeeded(level)+' mayo jars for Level '+(level+1));
     state='levelup';pauseBtn.disabled=true;systemStatus.className='tag fault';systemStatus.textContent='● LEVEL UNLOCKED';
-    show('LEVEL '+level+'!',newFeatures.join(' · ')+'.',level===2?'🦷':level===3?'💾':icons[kind]||'🫙','▶ Continue');
     sound('levelVoice');
+    if(inVersus()){versusSync();resumeLevel();return;}
+    show('LEVEL '+level+'!',newFeatures.join(' · ')+'.',level===2?'🦷':level===3?'💾':icons[kind]||'🫙','▶ Continue');
   }
   // Revealing the board BEFORE counting down makes the new obstacles visible.
   function resumeLevel(){
@@ -646,28 +711,30 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
     if(state!=='countdown')return;
     countdown.classList.add('hidden');
     state='playing';lastTime=0;accum=0;lastMoveAt=0;
-    pauseBtn.disabled=false;pauseBtn.textContent='⏸ Pause';
+    pauseBtn.disabled=inVersus();pauseBtn.textContent='⏸ Pause';
     systemStatus.className='tag';systemStatus.textContent='● APP RUNNING';
   }
 
   function end(win=false,cause='WALL_COLLISION'){
+    if(inVersus()){versusCrash(win,cause);return;}
     state='over';lastGame={score,level,mayo:mayoCount,durationMs:Math.round(activePlayMs),submitted:false};setSubmitButtons();countdown.classList.add('hidden');pauseBtn.disabled=true;systemStatus.className=win?'tag':'tag offline';systemStatus.textContent=win?'● MAYO MASTER':'● APP CRASHED';
     if(win){bsod.classList.add('hidden');show('MAYO OVERLOAD!','You cleared the whole board and claimed every last jar.','🏆','Play again');setSubmitButtons();sound('level');return;}
     sound('crash');overlay.classList.add('hidden');
     bsodScore.textContent=score+' points · '+mayoCount+' mayo jar'+(mayoCount===1?'':'s')+' recovered. IT level '+level+'.';
-    const codes={WALL_COLLISION:'EXC_NETWORK_BOUNDARY',SELF_COLLISION:'EXC_DUPLICATE_DARREN',HARDWARE_FAILURE:'EXC_HARDWARE_FAULT'};
+    const codes={WALL_COLLISION:'EXC_NETWORK_BOUNDARY',SELF_COLLISION:'EXC_DUPLICATE_DARREN',HARDWARE_FAILURE:'EXC_HARDWARE_FAULT',CAT_VOMIT:'EXC_HAIRBALL'};
     if(cause==='SELF_COLLISION'){
       bsodHeading.textContent='Darren has crashed into… Darren.';
       bsodDescription.textContent="Two Darrens attempted to occupy the same location. The Service Desk cannot support duplicate users.";
     }else{
       bsodHeading.textContent='Darren Snake quit unexpectedly.';
-      bsodDescription.textContent=cause==='HARDWARE_FAILURE'?'Darren connected to a faulty device. Try reopening the application.':'Darren left the network boundary. Please reopen the application.';
+      bsodDescription.textContent=cause==='CAT_VOMIT'?'Darren slipped in cat vomit. Try reopening the application.':cause==='HARDWARE_FAILURE'?'Darren connected to a faulty device. Try reopening the application.':'Darren left the network boundary. Please reopen the application.';
     }
     bsodReason.textContent='Exception: '+(codes[cause]||'MAYO_NOT_FOUND');
     bsod.classList.remove('hidden');
   }
 
   function togglePause(){
+    if(inVersus())return;
     if(state==='ramPlaying'||state==='ramIntro'){
       ramPausedAt=performance.now();
       const inIntro=state==='ramIntro';
@@ -773,7 +840,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
       if(options.length){dir={...options[0]};nextDir={...dir};}
     }
     state='ramPlaying';ramDeadline=now+RAM_LIMIT_MS;
-    ramMessage.classList.add('hidden');pauseBtn.disabled=false;
+    ramMessage.classList.add('hidden');pauseBtn.disabled=inVersus();
     systemStatus.className='tag';systemStatus.textContent='◉ RAM CHALLENGE';
     accum=0;lastTime=0;lastMoveAt=0;
     updateRamHud(now);
@@ -887,7 +954,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
     const growing=eating||eatingTooth;
     const body=growing?snake:snake.slice(0,-1);
     if(head.x<0||head.x>=N||head.y<0||head.y>=N){end(false,'WALL_COLLISION');return;}
-    if(blocked(head.x,head.y)){end(false,'HARDWARE_FAILURE');return;}
+    if(blocked(head.x,head.y)){const hit=obstacles.find(o=>o.x===head.x&&o.y===head.y);end(false,hit.kind==='vomit'?'CAT_VOMIT':'HARDWARE_FAILURE');return;}
     if(body.some(c=>c.x===head.x&&c.y===head.y)){end(false,'SELF_COLLISION');return;}
     snake.unshift(head);
     if(eating){
@@ -1059,6 +1126,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
     // Big, high-contrast computer equipment, clearly separate from the background PCB.
     for(const o of obstacles){
       const x=o.x*S,y=o.y*S,cx=x+S/2,cy=y+S/2;
+      if(o.kind==='vomit'){drawVomit(o,time);continue;}
       ctx.save();
       ctx.shadowColor='#fa535e';ctx.shadowBlur=10;
       ctx.fillStyle='#251f28';ctx.strokeStyle='#ff6871';ctx.lineWidth=2.5;
@@ -1087,6 +1155,46 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
       }
       ctx.restore();
     }
+  }
+
+  // Cat vomit dropped by a versus opponent: a lumpy puddle that splats in.
+  function drawVomit(o,time){
+    const x=o.x*S,y=o.y*S,cx=x+S/2,cy=y+S/2+2;
+    const age=o.born?(performance.now()-o.born):1e9;
+    const grow=Math.min(1,age/260),pop=grow<1?grow*(1.18-.18*grow):1;
+    let seed=o.x*7+o.y*13+3;const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280;};
+    ctx.save();
+    ctx.translate(cx,cy);ctx.scale(pop,pop);
+    // Warning glow for the first couple of seconds after it lands.
+    if(age<2200){ctx.shadowColor='#c8f05a';ctx.shadowBlur=16+8*Math.sin(age/90);}
+    ctx.fillStyle='#a8892c';ctx.strokeStyle='#2e2406';ctx.lineWidth=3;
+    ctx.beginPath();
+    const pts=11;
+    for(let i=0;i<=pts;i++){
+      const a=i/pts*Math.PI*2,r=22+rnd()*6;
+      const px=Math.cos(a)*r,py=Math.sin(a)*r*.78;
+      if(i===0)ctx.moveTo(px,py);else ctx.quadraticCurveTo(Math.cos(a-.28)*(r+5),Math.sin(a-.28)*(r+5)*.78,px,py);
+    }
+    ctx.closePath();ctx.fill();
+    ctx.shadowBlur=0;ctx.stroke();
+    ctx.fillStyle='#d9bd52';
+    ctx.beginPath();ctx.ellipse(-2,-1,18,12,-.2,0,Math.PI*2);ctx.fill();
+    // Chunks.
+    const chunks=['#e39a54','#9fbf4a','#f1d27a','#b0663a','#7f9e3a'];
+    for(let i=0;i<7;i++){
+      ctx.fillStyle=chunks[i%chunks.length];
+      ctx.beginPath();ctx.ellipse(-14+rnd()*26,-10+rnd()*18,2.5+rnd()*3,2+rnd()*2.2,rnd()*3,0,Math.PI*2);ctx.fill();
+    }
+    // Glossy highlight.
+    ctx.fillStyle='#fff8cf88';
+    ctx.beginPath();ctx.ellipse(-7,-7,5,2.2,-.5,0,Math.PI*2);ctx.fill();
+    // Stink lines.
+    ctx.strokeStyle='#d8f07a';ctx.lineWidth=2;ctx.lineCap='round';ctx.globalAlpha=.75;
+    for(let i=-1;i<=1;i++){
+      const sx=i*9,wob=Math.sin(time/240+i)*2.5;
+      ctx.beginPath();ctx.moveTo(sx,-19);ctx.quadraticCurveTo(sx+4+wob,-23,sx,-27);ctx.quadraticCurveTo(sx-4-wob,-31,sx+1,-35);ctx.stroke();
+    }
+    ctx.restore();
   }
 
   // Stylised, softly shaded eyes are drawn INSIDE the actual photo badge.
@@ -1242,6 +1350,8 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
       else updateRamHud(t);
     }
     if(state==='ramResult'&&t>=ramResultEnd)resumeFromRam();
+    if(state==='lifeLost'&&t>=lifeLostEnd)versusRespawn();
+    if(vs&&vs.pendingAttacks&&!ramSession&&(state==='playing'||state==='countdown'))versusDropVomit();
     if(state==='countdown'){
       const remaining=countdownEnd-t;
       if(remaining<=0)finishCountdown();
@@ -1270,13 +1380,14 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
 
   document.addEventListener('keydown',e=>{
     if(!lb.classList.contains('hidden')){if(e.key==='Escape')closeLeaderboard();return;}
+    if(!vsDialog.classList.contains('hidden')){if(e.key==='Escape')closeVersus();return;}
     if(e.target&&e.target.tagName==='INPUT')return;
     const k=e.key.toLowerCase();
     const map={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
     if(map[k]){e.preventDefault();changeDir(map[k]);}
     else if(k==='f'&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();toggleExpanded();}
     else if(k==='escape'&&document.body.classList.contains('expanded')&&!fsElement()){setExpanded(false);}
-    else if(e.code==='Space'){e.preventDefault();if(state==='ready'||state==='over')start();else if(state==='levelup')resumeLevel();else togglePause();}
+    else if(e.code==='Space'){e.preventDefault();if(state==='ready'||state==='over'||state==='levelup')bigButtonAction();else togglePause();}
   });
 
   document.querySelectorAll('[data-dir]').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();changeDir(b.dataset.dir);}));
@@ -1302,12 +1413,13 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
     if(e.changedTouches.length)steerSwipe(e.changedTouches[0].clientX,e.changedTouches[0].clientY);
   },{passive:true});
 
-  bigButton.addEventListener('click',()=>{if(state==='paused'||state==='ramPaused'||state==='ramPausedIntro')togglePause();else if(state==='levelup')resumeLevel();else start();});
+  function bigButtonAction(){if(state==='paused'||state==='ramPaused'||state==='ramPausedIntro')togglePause();else if(state==='levelup')resumeLevel();else if(vs&&vs.phase==='over'){versusQuit();openVersus();}else start();}
+  bigButton.addEventListener('click',bigButtonAction);
   rebootBtn.addEventListener('click',start);
   soundBtn.addEventListener('click',()=>{soundOn=!soundOn;if(!soundOn){stopRecordedSounds();if(state==='booting')finishBoot(bootRunId);}try{localStorage.setItem('darren-snake-sound',soundOn?'on':'off');}catch(e){}updateSoundButton();if(soundOn)sound('ram');});
   pauseBtn.addEventListener('click',togglePause);
-  restartBtn.addEventListener('click',start);
-  document.addEventListener('visibilitychange',()=>{if(document.hidden){if(state==='booting'){stopRecordedSounds();finishBoot(bootRunId);}if(state==='playing'||state==='ramPlaying'||state==='ramIntro')togglePause();if(state==='countdown'){countdown.classList.add('hidden');state='levelup';show('LEVEL '+level+' READY','Your new hardware is on the board. Continue when you are ready.','🖥️','▶ Continue');}}});
+  restartBtn.addEventListener('click',()=>{if(inVersus()&&!confirm('Leave the match? It counts as a loss.'))return;start();});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden&&!inVersus()){if(state==='booting'){stopRecordedSounds();finishBoot(bootRunId);}if(state==='playing'||state==='ramPlaying'||state==='ramIntro')togglePause();if(state==='countdown'){countdown.classList.add('hidden');state='levelup';show('LEVEL '+level+' READY','Your new hardware is on the board. Continue when you are ready.','🖥️','▶ Continue');}}});
 
   function resizeBoard(){
     const size=Math.max(0,Math.floor(Math.min(boardSlot.clientWidth-8,boardSlot.clientHeight-8)));
@@ -1425,7 +1537,240 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
   lbSend.addEventListener('click',submitScore);
   lbName.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();submitScore();}});
 
+  // ---- Versus mode (Vercel function at /api/match) ----
+  // Each player runs their own board. Every 1,500 points drops one cat vomit
+  // on the opponent's board. 3 lives each; the server decides the winner.
+  const VS_ATTACK_POINTS=1500,VS_LIVES=3,VS_SYNC_MS=800,VS_LOBBY_MS=1200;
+  const vsDialog=document.getElementById('vs'),vsSetup=document.getElementById('vsSetup'),vsWait=document.getElementById('vsWait');
+  const vsName=document.getElementById('vsName'),vsCode=document.getElementById('vsCode'),vsStatus=document.getElementById('vsStatus');
+  const vsCreate=document.getElementById('vsCreate'),vsJoin=document.getElementById('vsJoin'),vsCodeShow=document.getElementById('vsCodeShow'),vsWaitIntro=document.getElementById('vsWaitIntro');
+  const vsBar=document.getElementById('vsBar'),vsMyLives=document.getElementById('vsMyLives'),vsNext=document.getElementById('vsNext');
+  const vsOppName=document.getElementById('vsOppName'),vsOppScore=document.getElementById('vsOppScore'),vsOppLives=document.getElementById('vsOppLives');
+  const vsToast=document.getElementById('vsToast'),vsOpen=document.getElementById('vsOpen');
+  let vsToastTimer=0;
+  const hearts=n=>'❤️'.repeat(Math.max(0,n))+'🤍'.repeat(Math.max(0,VS_LIVES-n));
+  const fmt=n=>Number(n).toLocaleString('en-GB');
+  function setVsStatus(text,isError){vsStatus.textContent=text;vsStatus.classList.toggle('error',!!isError);}
+  async function vsApi(body){
+    const r=await fetch('/api/match',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(data.error||'Versus is unavailable right now.');
+    return data;
+  }
+  function showVsStep(waiting){vsSetup.classList.toggle('vs-hidden',waiting);vsWait.classList.toggle('vs-hidden',!waiting);}
+  function openVersus(code){
+    if(inVersus())return;
+    if(state==='playing'||state==='ramPlaying'||state==='ramIntro')togglePause();
+    else if(state==='countdown'){countdown.classList.add('hidden');state='levelup';show('LEVEL '+level+' READY','Your new hardware is on the board. Continue when you are ready.','🖥️','▶ Continue');}
+    showVsStep(false);setVsStatus('');
+    try{vsName.value=vsName.value||localStorage.getItem(LB_NAME_KEY)||'';}catch(e){}
+    if(code)vsCode.value=String(code).toUpperCase().replace(/[^A-Z]/g,'').slice(0,4);
+    vsCreate.disabled=false;vsJoin.disabled=false;
+    vsDialog.classList.remove('hidden');
+    setTimeout(()=>(vsName.value?(code?vsJoin:vsCreate):vsName).focus(),50);
+  }
+  function closeVersus(){
+    if(vs&&vs.phase==='lobby')versusQuit();
+    if(vs&&vs.phase==='starting')return; // The match is about to begin.
+    vsDialog.classList.add('hidden');vsName.blur();vsCode.blur();
+  }
+  function readName(){
+    const name=vsName.value.replace(/\s+/g,' ').trim();
+    if(name.length<2){setVsStatus('Enter a name of at least 2 characters.',true);vsName.focus();return null;}
+    try{localStorage.setItem(LB_NAME_KEY,name);}catch(e){}
+    return name;
+  }
+  async function createMatch(){
+    const name=readName();if(!name)return;
+    vsCreate.disabled=true;vsJoin.disabled=true;setVsStatus('Creating match…');
+    try{
+      const data=await vsApi({action:'create',name});
+      vs={phase:'lobby',code:data.code,token:data.token,player:data.player,name,opp:null};
+      vsCodeShow.textContent=data.code;vsWaitIntro.textContent='Send this code to your opponent:';
+      showVsStep(true);setVsStatus('Waiting for an opponent to join…');
+      versusLoop();
+    }catch(e){setVsStatus(e.message,true);vsCreate.disabled=false;vsJoin.disabled=false;}
+  }
+  async function joinMatch(){
+    const name=readName();if(!name)return;
+    const code=vsCode.value.toUpperCase().replace(/[^A-Z]/g,'');
+    if(code.length!==4){setVsStatus('Match codes are 4 letters.',true);vsCode.focus();return;}
+    vsCreate.disabled=true;vsJoin.disabled=true;setVsStatus('Joining…');
+    try{
+      const data=await vsApi({action:'join',code,name});
+      vs={phase:'lobby',code:data.code,token:data.token,player:data.player,name,opp:null};
+      vsCodeShow.textContent=data.code;showVsStep(true);
+      versusHandle(data);
+      versusLoop();
+    }catch(e){setVsStatus(e.message,true);vsCreate.disabled=false;vsJoin.disabled=false;}
+  }
+  // Check in with the server: send our progress, hear about the opponent.
+  async function versusSync(){
+    const match=vs;
+    if(!match||match.phase==='over'||match.busy)return;
+    match.busy=true;
+    try{
+      const playing=match.phase==='playing';
+      const data=await vsApi({action:'sync',code:match.code,token:match.token,
+        score:playing?score:0,lives:playing?match.lives:VS_LIVES,level:playing?level:1,cleared:!!match.cleared});
+      if(vs===match)versusHandle(data);
+    }catch(e){
+      if(vs===match&&match.phase==='lobby')setVsStatus(e.message,true);
+    }finally{match.busy=false;}
+  }
+  function versusLoop(){
+    const match=vs;
+    clearTimeout(match.timer);
+    versusSync().finally(()=>{
+      if(vs!==match||match.phase==='over')return;
+      match.timer=setTimeout(versusLoop,match.phase==='playing'?VS_SYNC_MS:VS_LOBBY_MS);
+    });
+  }
+  function versusHandle(data){
+    if(data.opp){
+      vs.opp=data.opp;
+      vsOppName.textContent=data.opp.name;vsOppScore.textContent=fmt(data.opp.score);vsOppLives.textContent=hearts(data.opp.lives);
+    }
+    if(vs.phase==='lobby'&&data.status==='playing'&&data.opp){
+      vs.phase='starting';
+      vsWaitIntro.textContent='Opponent found!';
+      setVsStatus(data.opp.name+' joined. Get ready…');
+      setTimeout(()=>{if(vs&&vs.phase==='starting')startVersusGame();},Math.max(0,data.startInMs||0));
+      return;
+    }
+    if(vs.phase==='playing'&&data.opp){
+      // One block of cat vomit for every 1,500 points the opponent has scored.
+      const owed=Math.floor(data.opp.score/VS_ATTACK_POINTS);
+      if(owed>vs.attacksReceived){
+        const n=owed-vs.attacksReceived;
+        vs.attacksReceived=owed;vs.pendingAttacks+=n;
+        vsShowToast('🤮 '+data.opp.name+' sent cat vomit!',true);
+      }
+    }
+    if(data.status==='over'&&vs.phase!=='over'){
+      const won=data.winner===vs.player,opp=vs.opp?vs.opp.name:'Your opponent';
+      const reasons={lives:won?opp+' ran out of lives.':'You ran out of lives.',left:won?opp+' left the match.':'You left the match.',
+        timeout:won?opp+' disconnected.':'You lost connection to the match.',cleared:won?'You filled the whole board!':opp+' filled their whole board!'};
+      versusFinish(won,reasons[data.endReason]||'');
+    }
+  }
+  function startVersusGame(){
+    stopRecordedSounds();
+    hasStartedOnce=true;
+    reset();
+    Object.assign(vs,{phase:'playing',lives:VS_LIVES,attacksReceived:0,pendingAttacks:0,cleared:false});
+    vsDialog.classList.add('hidden');lb.classList.add('hidden');
+    overlay.classList.add('hidden');bsod.classList.add('hidden');bootScreen.classList.add('hidden');vsToast.classList.add('hidden');
+    lastGame=null;setSubmitButtons();
+    lbBtn.disabled=true;pauseBtn.disabled=true;
+    vsBar.classList.remove('hidden');
+    updateVsBar();resizeBoard();
+    startCountdown();
+  }
+  function updateVsBar(){
+    if(!vs)return;
+    vsMyLives.textContent=hearts(vs.lives??VS_LIVES);
+    vsNext.textContent='🤮 in '+fmt(VS_ATTACK_POINTS-score%VS_ATTACK_POINTS);
+  }
+  function versusPointsAdded(before){
+    if(!inVersus())return;
+    const sent=Math.floor(score/VS_ATTACK_POINTS)-Math.floor(before/VS_ATTACK_POINTS);
+    if(sent>0){vsShowToast('🤮 Cat vomit sent to '+(vs.opp?vs.opp.name:'your opponent')+'!');versusSync();}
+    updateVsBar();
+  }
+  function vsShowToast(text,bad){
+    vsToast.textContent=text;vsToast.classList.toggle('bad',!!bad);vsToast.classList.remove('hidden');
+    clearTimeout(vsToastTimer);vsToastTimer=setTimeout(()=>vsToast.classList.add('hidden'),2200);
+  }
+  function versusDropVomit(){
+    while(vs.pendingAttacks>0){
+      vs.pendingAttacks--;
+      if(spawnHardware('vomit')||spawnHardware('vomit',true))sound('vomit');
+    }
+  }
+  function versusCrash(win,cause){
+    if(win){vs.cleared=true;versusSync();return;}
+    vs.lives=Math.max(0,vs.lives-1);
+    updateVsBar();
+    sound('crash');burst(snake[0].x,snake[0].y);
+    versusSync();
+    if(vs.lives<=0){
+      versusFinish(false,'You ran out of lives.');
+      return;
+    }
+    const what={WALL_COLLISION:'HIT THE WALL',SELF_COLLISION:'CRASHED INTO HIMSELF',HARDWARE_FAILURE:'HIT FAULTY HARDWARE',CAT_VOMIT:'SLIPPED IN CAT VOMIT'};
+    state='lifeLost';lifeLostEnd=performance.now()+1700;
+    countdown.classList.add('hidden');vsToast.classList.add('hidden');
+    ramMessage.classList.add('life');ramMessage.classList.remove('hidden');
+    ramMessageTitle.textContent='DARREN '+(what[cause]||'CRASHED');
+    ramMessageNumber.textContent=hearts(vs.lives);
+    ramMessageCaption.textContent=vs.lives+' '+(vs.lives===1?'LIFE':'LIVES')+' LEFT';
+    systemStatus.className='tag offline';systemStatus.textContent='● LIFE LOST';
+  }
+  // Put Darren back in the middle at the same length, then count down.
+  function versusRespawn(){
+    ramMessage.classList.add('hidden');ramMessage.classList.remove('life');
+    centreSnakeKeepLength();
+    const onSnake=c=>c&&snake.some(b=>b.x===c.x&&b.y===c.y);
+    if(onSnake(tooth)||(tooth&&blocked(tooth.x,tooth.y))){tooth=null;toothMovesLeft=0;}
+    if(!fruit||onSnake(fruit)||blocked(fruit.x,fruit.y))fruit=randomFruit();
+    particles=[];
+    if(!fruit){vs.cleared=true;versusSync();return;}
+    startCountdown();
+  }
+  function versusFinish(won,reason){
+    const match=vs;
+    if(!match||match.phase==='over')return;
+    clearTimeout(match.timer);
+    match.phase='over';
+    state='over';
+    countdown.classList.add('hidden');ramHud.classList.add('hidden');ramMessage.classList.add('hidden');ramMessage.classList.remove('life');
+    pauseBtn.disabled=true;lbBtn.disabled=false;
+    systemStatus.className=won?'tag':'tag offline';systemStatus.textContent=won?'● YOU WIN':'● YOU LOSE';
+    updateVsBar();
+    const opp=match.opp;
+    const detail=reason+' Final score: you '+fmt(score)+(opp?' · '+opp.name+' '+fmt(opp.score):'')+'.';
+    show(won?'YOU WIN!':'YOU LOSE',detail,won?'🏆':'🤮','⚔️ New match');
+    if(won)sound('level');else if(match.lives>0)sound('crash');
+    // Make sure the server has our final state, and keep showing the opponent's.
+    vsApi({action:'sync',code:match.code,token:match.token,score,lives:match.lives??0,level,cleared:!!match.cleared}).catch(()=>{});
+  }
+  // Leave quietly (cancel a waiting room, or forfeit a running match).
+  function versusQuit(){
+    const match=vs;vs=null;
+    if(!match)return;
+    clearTimeout(match.timer);
+    vsBar.classList.add('hidden');vsToast.classList.add('hidden');lbBtn.disabled=false;
+    if(match.phase!=='over')vsApi({action:'leave',code:match.code,token:match.token}).catch(()=>{});
+    resizeBoard();
+  }
+  window.addEventListener('pagehide',()=>{
+    if(vs&&vs.phase!=='over'&&navigator.sendBeacon)navigator.sendBeacon('/api/match',JSON.stringify({action:'leave',code:vs.code,token:vs.token}));
+  });
+  vsOpen.addEventListener('click',()=>openVersus());
+  document.getElementById('bsodVs').addEventListener('click',()=>openVersus());
+  document.getElementById('vsClose').addEventListener('click',closeVersus);
+  document.getElementById('vsCancel').addEventListener('click',()=>{versusQuit();showVsStep(false);setVsStatus('');vsCreate.disabled=false;vsJoin.disabled=false;});
+  document.getElementById('vsCopy').addEventListener('click',async()=>{
+    if(!vs)return;
+    const link=location.origin+location.pathname+'?vs='+vs.code;
+    try{
+      if(navigator.share&&matchMedia('(pointer:coarse)').matches)await navigator.share({title:'Darren Snake versus',text:'Play me at Darren Snake! Code '+vs.code,url:link});
+      else{await navigator.clipboard.writeText(link);setVsStatus('Invite link copied. Waiting for an opponent…');}
+    }catch(e){setVsStatus('Share this link: '+link);}
+  });
+  vsDialog.addEventListener('click',e=>{if(e.target===vsDialog)closeVersus();});
+  vsCreate.addEventListener('click',createMatch);
+  vsJoin.addEventListener('click',joinMatch);
+  vsCode.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();joinMatch();}});
+  vsName.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();(vsCode.value?joinMatch:createMatch)();}});
+  // The overlay's Versus button only belongs on the start and game-over screens.
+  const showOverlay=show;
+  show=function(...args){showOverlay(...args);vsOpen.classList.toggle('hidden',!(state==='ready'||(state==='over'&&!vs)));};
+
   reset(); resizeBoard(); requestAnimationFrame(frame);
+  // Invite links look like /?vs=ABCD.
+  try{const invite=new URLSearchParams(location.search).get('vs');if(invite)openVersus(invite);}catch(e){}
 })();
 </script>
 </body>
