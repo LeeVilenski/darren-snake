@@ -39,6 +39,7 @@ const isInt = (v, min, max) => Number.isInteger(v) && v >= min && v <= max;
 
 // Checks the submission is consistent with how the game awards points:
 // mayo = 100, tooth = 200, RAM Gigaboo = 2000, and level L needs (L-1)(L+2) jars.
+// The 23H2 bonus doubles mayo (200) and teeth (400) while it runs; RAM is never doubled.
 // This stops casual tampering, not a determined cheat (the game runs in the browser).
 function validate(body) {
   const name = String(body?.name ?? '').normalize('NFC').replace(/\s+/g, ' ').trim();
@@ -47,11 +48,12 @@ function validate(body) {
   if (!isInt(score, 100, 2_000_000) || !isInt(level, 1, 200) || !isInt(mayo, 0, 5000) || !isInt(durationMs, 0, 86_400_000))
     return { error: 'Invalid score.' };
   // Teeth (Level 2+) appear every few jars; RAM rounds (Level 3+) need well over 10s each.
+  // `bonus` is everything above 100 per jar: doubled jars, teeth and RAM rounds.
   const bonus = score - mayo * 100;
   const maxTeeth = level >= 2 ? mayo : 0;
   const maxRam = level >= 3 ? Math.floor(durationMs / 10_000) + 1 : 0;
-  const ok = score % 100 === 0 && bonus >= 0 && bonus % 200 === 0 &&
-    bonus <= maxTeeth * 200 + maxRam * 2000 &&
+  const ok = score % 100 === 0 && bonus >= 0 &&
+    bonus <= mayo * 100 + maxTeeth * 400 + maxRam * 2000 &&
     mayo >= (level - 1) * (level + 2) && durationMs >= mayo * 100;
   if (!ok) return { error: 'That score does not add up.' };
   return { name, score, level, mayo, durationMs };
