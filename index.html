@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#141f36">
-<title>Darren Snake.app | Version 29 - Windows Update</title>
+<title>Darren Snake.app | Version 29 - 23H2 Bonus</title>
 <!-- Bonus teeth from Level 2; RAM Gigaboo rounds from Level 3; real recorded catchphrase effects. -->
 <style>
 :root{--bg:#071911;--panel:#0e2a22;--line:#245d49;--muted:#a8cbb7;--text:#edfff6;--lime:#bdff6b;--cyan:#55f1ce;--cream:#fff4cf;--mayo:#f8efcf;--gold:#e9c773}
@@ -194,7 +194,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
 .ram-message-title{font-weight:1000;letter-spacing:.08em;font-size:clamp(16px,4vw,27px);color:#9cffe4;text-shadow:0 0 10px #002b30,0 3px 5px #000}
 .ram-message-number{font-size:clamp(70px,21vw,124px);font-weight:950;line-height:1.05;color:#fff;filter:drop-shadow(0 0 10px #4edcbd)}
 .ram-message-caption{font-size:clamp(10px,2.6vw,15px);font-weight:900;max-width:90%;text-shadow:0 3px 5px #000;line-height:1.4}
-/* Windows Update combo: 3 mayo jars within 4 seconds = double points for 20 seconds. */
+/* 23H2 bonus combo: 3 mayo jars within 4 seconds = double points for 20 seconds. */
 .update-hud{position:absolute;z-index:3;left:7px;right:7px;top:7px;display:flex;align-items:center;gap:7px;padding:6px 8px 9px;border-radius:10px;background:#0a3d8cdd;border:1px solid #6fb6ffc0;color:#eef6ff;pointer-events:none;font-size:clamp(9px,2.4vw,12px);font-weight:800;box-shadow:0 1px 13px #2a8cff66;overflow:hidden}
 .update-hud.hidden{display:none}
 .update-label{flex:1;letter-spacing:.035em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -354,7 +354,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
     <canvas id="game" width="600" height="600" aria-label="Snake game board"></canvas>
     <div class="vs-toast hidden" id="vsToast" role="status"></div>
     <div class="update-hud hidden" id="updateHud" aria-live="off">
-      <span class="update-label">🪟 WINDOWS UPDATE · 2× POINTS</span>
+      <span class="update-label">🪟 23H2 BONUS · 2× POINTS</span>
       <strong id="updateTimer">20s</strong>
       <span class="update-bar" id="updateBar"></span>
     </div>
@@ -369,7 +369,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
       <div class="ram-message-caption" id="ramMessageCaption">COLLECT 2, 4, 8 &amp; 16 GB · +2,000 POINTS</div>
     </div>
     <div class="overlay" id="overlay" aria-live="polite">
-      <div class="overlay-card"><div class="symbol" id="symbol">🫙</div><h2 id="message">Ready to open Darren Snake?</h2><p id="detail">Mayo +100 · Teeth +200 (Level 2+) · 3 mayo in 4s = Windows Update 2× points · Random RAM Gigaboo challenges (Level 3+)!</p><button class="primary" id="bigButton">▶ Open game</button><button class="secondary lb-btn hidden" id="overlaySubmit">🏆 Submit score</button><button class="secondary lb-btn" id="vsOpen">⚔️ Versus</button></div>
+      <div class="overlay-card"><div class="symbol" id="symbol">🫙</div><h2 id="message">Ready to open Darren Snake?</h2><p id="detail">Mayo +100 · Teeth +200 (Level 2+) · 3 mayo in 4s = 23H2 bonus 2× points · Random RAM Gigaboo challenges (Level 3+)!</p><button class="primary" id="bigButton">▶ Open game</button><button class="secondary lb-btn hidden" id="overlaySubmit">🏆 Submit score</button><button class="secondary lb-btn" id="vsOpen">⚔️ Versus</button></div>
     </div>
     <div class="countdown hidden" id="countdown" aria-live="off" aria-label="Next level starts in three seconds">
       <div class="countdown-chip"><span>LEVEL <b id="countdownLevel">2</b> · GET READY</span><strong id="countdownNumber">3</strong></div>
@@ -398,7 +398,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
   </div>
   </div>
   <div class="actions"><button class="secondary" id="pauseBtn" disabled>⏸ Pause</button><button class="secondary" id="restartBtn">↻ New game</button><button class="secondary" id="soundBtn" aria-label="Mute game sounds" aria-pressed="true">🔊 Sound</button><button class="secondary" id="lbBtn">🏆 Scores</button></div>
-  <div class="controls"><div class="help"><strong>How to play</strong><br>Swipe the board or use <strong>↑ ↓ ← →</strong> / WASD.<br>Mayo +100 · Tooth +200 · 3 mayo within 4 seconds starts Windows Update: double points for 20 seconds · RAM Gigaboo +2,000 (Level 3+).<br>Avoid faulty PCs. <strong>Space</strong> pauses · <strong>F</strong> expands.</div><div class="dpad" aria-label="Direction controls"><button class="up" data-dir="up" aria-label="Up">↑</button><button class="left" data-dir="left" aria-label="Left">←</button><button class="down" data-dir="down" aria-label="Down">↓</button><button class="right" data-dir="right" aria-label="Right">→</button></div></div>
+  <div class="controls"><div class="help"><strong>How to play</strong><br>Swipe the board or use <strong>↑ ↓ ← →</strong> / WASD.<br>Mayo +100 · Tooth +200 · 3 mayo within 4 seconds starts the 23H2 bonus: double points for 20 seconds · RAM Gigaboo +2,000 (Level 3+).<br>Avoid faulty PCs. <strong>Space</strong> pauses · <strong>F</strong> expands.</div><div class="dpad" aria-label="Direction controls"><button class="up" data-dir="up" aria-label="Up">↑</button><button class="left" data-dir="left" aria-label="Left">←</button><button class="down" data-dir="down" aria-label="Down">↓</button><button class="right" data-dir="right" aria-label="Right">→</button></div></div>
   <p class="footer">Mac-style interface · Online leaderboard · Plays offline too</p>
 </main>
 <div class="lb hidden" id="lb" role="dialog" aria-modal="true" aria-labelledby="lbTitle">
@@ -453,7 +453,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
   let vs=null,lifeLostEnd=0;
   function inVersus(){return !!(vs&&vs.phase==='playing');}
   const RAM_LIMIT_MS=10000, RAM_GOAL=[2,4,8,16];
-  // Windows Update combo. Times use activePlayMs, so pauses, level-up
+  // 23H2 bonus combo. Times use activePlayMs, so pauses, level-up
   // screens and RAM challenges don't eat into the 4s window or the 20s boost.
   const COMBO_JARS=3,COMBO_WINDOW_MS=4000,UPDATE_MS=20000,UPDATE_MULTIPLIER=2;
   let comboTimes=[],updateUntil=0;
@@ -468,7 +468,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
     comboTimes=[];
     const already=updateActive();
     updateUntil=activePlayMs+UPDATE_MS;
-    vsShowToast(already?'🪟 Update extended! 20 more seconds of 2× points':'🪟 Windows Update! 2× points for 20 seconds',false,true);
+    vsShowToast(already?'🪟 23H2 bonus extended! 20 more seconds of 2× points':'🪟 23H2 bonus! 2× points for 20 seconds',false,true);
     sound('update');
   }
   function stopUpdate(){comboTimes=[];updateUntil=0;renderUpdateHud();}
@@ -1803,7 +1803,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
     if(sent>0){vsShowToast('🤮 Cat vomit sent to '+(vs.opp?vs.opp.name:'your opponent')+'!');versusSync();}
     updateVsBar();
   }
-  // Also used outside versus for the Windows Update banner (update=true).
+  // Also used outside versus for the 23H2 bonus banner (update=true).
   function vsShowToast(text,bad,update){
     vsToast.textContent=text;vsToast.classList.toggle('bad',!!bad);vsToast.classList.toggle('update',!!update);vsToast.classList.remove('hidden');
     clearTimeout(vsToastTimer);vsToastTimer=setTimeout(()=>vsToast.classList.add('hidden'),2200);
