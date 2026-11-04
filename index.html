@@ -202,7 +202,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
 .ram-message-title{font-weight:1000;letter-spacing:.08em;font-size:clamp(16px,4vw,27px);color:#9cffe4;text-shadow:0 0 10px #002b30,0 3px 5px #000}
 .ram-message-number{font-size:clamp(70px,21vw,124px);font-weight:950;line-height:1.05;color:#fff;filter:drop-shadow(0 0 10px #4edcbd)}
 .ram-message-caption{font-size:clamp(10px,2.6vw,15px);font-weight:900;max-width:90%;text-shadow:0 3px 5px #000;line-height:1.4}
-/* 23H2 bonus combo: 3 mayo jars within 4 seconds = double points for 20 seconds. */
+/* 23H2 bonus combo: 4 mayo jars within 2 seconds = double points for 10 seconds. */
 .stat.update-hud{background:#0a3d8c;border-color:#6fb6ffc0;box-shadow:0 0 13px #2a8cff66}
 .update-hud .label{color:#cfe6ff}.update-hud strong{color:#fff}
 .update-bar{position:absolute;left:0;bottom:0;height:3px;width:100%;background:#7fd0ff;transform-origin:left center}
@@ -352,7 +352,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
     <div class="stat"><span class="label" id="levelGoal">Level · 0/4</span><strong id="level">1</strong></div>
     <div class="stat stat-hud update-hud hidden" id="updateHud" aria-live="off">
       <span class="label">🪟 23H2 bonus · 2× points</span>
-      <strong id="updateTimer">20s</strong>
+      <strong id="updateTimer">10s</strong>
       <span class="update-bar" id="updateBar"></span>
     </div>
     <div class="stat stat-hud ram-hud hidden" id="ramHud" aria-live="off">
@@ -374,7 +374,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
       <div class="ram-message-caption" id="ramMessageCaption">COLLECT 2, 4, 8 &amp; 16 GB · +2,000 POINTS</div>
     </div>
     <div class="overlay" id="overlay" aria-live="polite">
-      <div class="overlay-card"><div class="symbol" id="symbol">🫙</div><h2 id="message">Ready to open Darren Snake?</h2><p id="detail">Mayo +100 · Teeth +200 (Level 2+) · 3 mayo in 4s = 23H2 bonus 2× points · Random RAM Gigaboo challenges (Level 3+)!</p><button class="primary" id="bigButton">▶ Open game</button><button class="secondary lb-btn hidden" id="overlaySubmit">🏆 Submit score</button><button class="secondary lb-btn" id="vsOpen">⚔️ Versus</button></div>
+      <div class="overlay-card"><div class="symbol" id="symbol">🫙</div><h2 id="message">Ready to open Darren Snake?</h2><p id="detail">Mayo +100 · Teeth +200 (Level 2+) · 4 mayo in 2s = 23H2 bonus 2× points · Random RAM Gigaboo challenges (Level 3+)!</p><button class="primary" id="bigButton">▶ Open game</button><button class="secondary lb-btn hidden" id="overlaySubmit">🏆 Submit score</button><button class="secondary lb-btn" id="vsOpen">⚔️ Versus</button></div>
     </div>
     <div class="countdown hidden" id="countdown" aria-live="off" aria-label="Next level starts in three seconds">
       <div class="countdown-chip"><span>LEVEL <b id="countdownLevel">2</b> · GET READY</span><strong id="countdownNumber">3</strong></div>
@@ -403,7 +403,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
   </div>
   </div>
   <div class="actions"><button class="secondary" id="pauseBtn" disabled>⏸ Pause</button><button class="secondary" id="restartBtn">↻ New game</button><button class="secondary" id="soundBtn" aria-label="Mute game sounds" aria-pressed="true">🔊 Sound</button><button class="secondary" id="lbBtn">🏆 Scores</button></div>
-  <div class="controls"><div class="help"><strong>How to play</strong><br>Swipe the board or use <strong>↑ ↓ ← →</strong> / WASD.<br>Mayo +100 · Tooth +200 · 3 mayo within 4 seconds starts the 23H2 bonus: double points for 20 seconds · RAM Gigaboo +2,000 (Level 3+).<br>Avoid faulty PCs. <strong>Space</strong> pauses · <strong>F</strong> expands.</div><div class="dpad" aria-label="Direction controls"><button class="up" data-dir="up" aria-label="Up">↑</button><button class="left" data-dir="left" aria-label="Left">←</button><button class="down" data-dir="down" aria-label="Down">↓</button><button class="right" data-dir="right" aria-label="Right">→</button></div></div>
+  <div class="controls"><div class="help"><strong>How to play</strong><br>Swipe the board or use <strong>↑ ↓ ← →</strong> / WASD.<br>Mayo +100 · Tooth +200 · 4 mayo within 2 seconds starts the 23H2 bonus: double points for 10 seconds · RAM Gigaboo +2,000 (Level 3+).<br>Avoid faulty PCs. <strong>Space</strong> pauses · <strong>F</strong> expands.</div><div class="dpad" aria-label="Direction controls"><button class="up" data-dir="up" aria-label="Up">↑</button><button class="left" data-dir="left" aria-label="Left">←</button><button class="down" data-dir="down" aria-label="Down">↓</button><button class="right" data-dir="right" aria-label="Right">→</button></div></div>
   <p class="footer">Mac-style interface · Online leaderboard · Plays offline too</p>
 </main>
 <div class="lb hidden" id="lb" role="dialog" aria-modal="true" aria-labelledby="lbTitle">
@@ -460,12 +460,12 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
   const RAM_LIMIT_MS=10000, RAM_GOAL=[2,4,8,16];
   // 23H2 bonus combo. Times use activePlayMs, so pauses, level-up
   // screens and RAM challenges don't eat into the 4s window or the 20s boost.
-  const COMBO_JARS=3,COMBO_WINDOW_MS=4000,UPDATE_MS=20000,UPDATE_MULTIPLIER=2;
+  const COMBO_JARS=4,COMBO_WINDOW_MS=2000,UPDATE_MS=10000,UPDATE_MULTIPLIER=2;
   let comboTimes=[],updateUntil=0;
   const updateHud=document.getElementById('updateHud'),updateTimerEl=document.getElementById('updateTimer'),updateBar=document.getElementById('updateBar'),boardEl=document.getElementById('board');
   function updateActive(){return activePlayMs<updateUntil;}
   function pickupPoints(base){return updateActive()?base*UPDATE_MULTIPLIER:base;}
-  // Called on every mayo jar. A combo while the update is running restarts the 20s.
+  // Called on every mayo jar. A combo while the update is running restarts the timer.
   function registerMayoCombo(){
     comboTimes.push(activePlayMs);
     comboTimes=comboTimes.filter(t=>activePlayMs-t<=COMBO_WINDOW_MS);
@@ -473,7 +473,7 @@ body.expanded .controls{justify-content:center;grid-template-columns:auto}
     comboTimes=[];
     const already=updateActive();
     updateUntil=activePlayMs+UPDATE_MS;
-    vsShowToast(already?'🪟 23H2 bonus extended! 20 more seconds of 2× points':'🪟 23H2 bonus! 2× points for 20 seconds',false,true);
+    vsShowToast(already?'🪟 23H2 bonus extended! '+UPDATE_MS/1000+' more seconds of 2× points':'🪟 23H2 bonus! 2× points for '+UPDATE_MS/1000+' seconds',false,true);
     sound('update');
   }
   function stopUpdate(){comboTimes=[];updateUntil=0;renderUpdateHud();}
